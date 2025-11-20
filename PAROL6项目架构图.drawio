@@ -1,0 +1,353 @@
+<mxfile host="app.diagrams.net" modified="2024-11-20T00:00:00.000Z" agent="Claude" version="21.0.0" etag="PROJECT_ARCHITECTURE" type="device">
+  <diagram id="PAROL6_Architecture" name="PAROL6 项目架构">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1920" pageHeight="1200" background="#ffffff" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- 标题 -->
+        <mxCell id="title" value="PAROL6 机械臂智能控制系统架构" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=24;fontStyle=1;fontColor=#1A237E;" vertex="1" parent="1">
+          <mxGeometry x="660" y="20" width="600" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- 图例 -->
+        <mxCell id="legend_bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#BDBDBD;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="40" y="80" width="200" height="240" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend_title" value="图例说明" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;fontColor=#424242;" vertex="1" parent="1">
+          <mxGeometry x="40" y="90" width="200" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend1" value="用户交互层" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1976D2;strokeWidth=2;fontSize=11;fontColor=#0D47A1;" vertex="1" parent="1">
+          <mxGeometry x="60" y="130" width="160" height="25" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend2" value="AI 处理层" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8EAF6;strokeColor=#5E35B1;strokeWidth=2;fontSize=11;fontColor=#311B92;" vertex="1" parent="1">
+          <mxGeometry x="60" y="165" width="160" height="25" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend3" value="视觉处理层" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E0F2F1;strokeColor=#00897B;strokeWidth=2;fontSize=11;fontColor=#004D40;" vertex="1" parent="1">
+          <mxGeometry x="60" y="200" width="160" height="25" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend4" value="运动控制层" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#EF6C00;strokeWidth=2;fontSize=11;fontColor=#E65100;" vertex="1" parent="1">
+          <mxGeometry x="60" y="235" width="160" height="25" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend5" value="硬件接口层" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECEFF1;strokeColor=#546E7A;strokeWidth=2;fontSize=11;fontColor=#263238;" vertex="1" parent="1">
+          <mxGeometry x="60" y="270" width="160" height="25" as="geometry"/>
+        </mxCell>
+
+        <!-- ========== 第1层：用户交互层 ========== -->
+        <mxCell id="layer1_bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1976D2;strokeWidth=3;opacity=30;" vertex="1" parent="1">
+          <mxGeometry x="280" y="80" width="1560" height="160" as="geometry"/>
+        </mxCell>
+        <mxCell id="layer1_title" value="第 1 层：用户交互层" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=18;fontStyle=1;fontColor=#0D47A1;" vertex="1" parent="1">
+          <mxGeometry x="300" y="90" width="250" height="30" as="geometry"/>
+        </mxCell>
+
+        <!-- 自然语言输入 -->
+        <mxCell id="user_nlp" value="&lt;b&gt;自然语言输入&lt;/b&gt;&lt;br&gt;&lt;br&gt;文件: gemini.py&lt;br&gt;&lt;br&gt;模式:&lt;br&gt;• TEXT - 文本逐步控制&lt;br&gt;• AUTONOMOUS - 自主任务&lt;br&gt;• AUDIO - 语音输入&lt;br&gt;&lt;br&gt;参数:&lt;br&gt;• push_to_talk_key: space&lt;br&gt;• response_mode: text/audio" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1976D2;strokeWidth=2;fontSize=11;align=left;verticalAlign=top;fontColor=#0D47A1;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="320" y="130" width="240" height="90" as="geometry"/>
+        </mxCell>
+
+        <!-- Python API -->
+        <mxCell id="user_api" value="&lt;b&gt;Python API 编程&lt;/b&gt;  &lt;br&gt;&lt;br&gt;文件: robot_api.py (57KB)&lt;br&gt;&lt;br&gt;主要函数:&lt;br&gt;• move_robot_joints()&lt;br&gt;• move_robot_pose()&lt;br&gt;• smooth_circle()&lt;br&gt;• control_electric_gripper()&lt;br&gt;&lt;br&gt;配置:&lt;br&gt;• SERVER_IP: 127.0.0.1&lt;br&gt;• SERVER_PORT: 5001" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1976D2;strokeWidth=2;fontSize=11;align=left;verticalAlign=top;fontColor=#0D47A1;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="600" y="130" width="240" height="90" as="geometry"/>
+        </mxCell>
+
+        <!-- Jupyter Notebook -->
+        <mxCell id="user_jupyter" value="&lt;b&gt;Jupyter Notebook&lt;/b&gt;&lt;br&gt;&lt;br&gt;文件: 01_PAROL6完整功能测试教程.ipynb&lt;br&gt;&lt;br&gt;功能:&lt;br&gt;• 交互式测试&lt;br&gt;• 逐步执行&lt;br&gt;• 可视化反馈&lt;br&gt;• 实时调试&lt;br&gt;&lt;br&gt;包含 30+ 测试单元格" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1976D2;strokeWidth=2;fontSize=11;align=left;verticalAlign=top;fontColor=#0D47A1;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="880" y="130" width="240" height="90" as="geometry"/>
+        </mxCell>
+
+        <!-- UDP Client -->
+        <mxCell id="user_udp" value="&lt;b&gt;UDP 客户端&lt;/b&gt;&lt;br&gt;&lt;br&gt;协议:&lt;br&gt;• 发送: UDP 5001&lt;br&gt;• 接收: UDP 5002&lt;br&gt;&lt;br&gt;特点:&lt;br&gt;• 轻量级&lt;br&gt;• 低延迟 &lt;50ms&lt;br&gt;• 跨平台&lt;br&gt;• 远程控制" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1976D2;strokeWidth=2;fontSize=11;align=left;verticalAlign=top;fontColor=#0D47A1;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="1160" y="130" width="200" height="90" as="geometry"/>
+        </mxCell>
+
+        <!-- 配置文件 -->
+        <mxCell id="user_config" value="&lt;b&gt;配置管理&lt;/b&gt;&lt;br&gt;&lt;br&gt;文件:&lt;br&gt;• .env (Gemini API)&lt;br&gt;• com_port.txt&lt;br&gt;• config.yaml (建议)&lt;br&gt;&lt;br&gt;配置项:&lt;br&gt;• GEMINI_API_KEY&lt;br&gt;• 串口端口&lt;br&gt;• 运动参数" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1976D2;strokeWidth=2;fontSize=11;align=left;verticalAlign=top;fontColor=#0D47A1;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="1400" y="130" width="200" height="90" as="geometry"/>
+        </mxCell>
+
+        <!-- ========== 第2层：AI 处理层 ========== -->
+        <mxCell id="layer2_bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8EAF6;strokeColor=#5E35B1;strokeWidth=3;opacity=30;" vertex="1" parent="1">
+          <mxGeometry x="280" y="280" width="1560" height="180" as="geometry"/>
+        </mxCell>
+        <mxCell id="layer2_title" value="第 2 层：AI 处理层 (Gemini 2.5 Flash Vision)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=18;fontStyle=1;fontColor=#311B92;" vertex="1" parent="1">
+          <mxGeometry x="300" y="290" width="450" height="30" as="geometry"/>
+        </mxCell>
+
+        <!-- Gemini Live API -->
+        <mxCell id="ai_gemini" value="&lt;b&gt;Gemini Live API&lt;/b&gt;&lt;br&gt;&lt;br&gt;文件: gemini.py&lt;br&gt;&lt;br&gt;类: GeminiLiveController&lt;br&gt;&lt;br&gt;主要方法:&lt;br&gt;• start_search()&lt;br&gt;• stop_search()&lt;br&gt;• handle_function_call()&lt;br&gt;• send_video_frame()&lt;br&gt;&lt;br&gt;配置:&lt;br&gt;• model: gemini-2.5-flash-live-preview&lt;br&gt;• snapshot_interval: 1.0s&lt;br&gt;• livestream_fps: 10" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D1C4E9;strokeColor=#5E35B1;strokeWidth=2;fontSize=11;align=left;verticalAlign=top;fontColor=#311B92;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="320" y="330" width="260" height="110" as="geometry"/>
+        </mxCell>
+
+        <!-- 自然语言理解 -->
+        <mxCell id="ai_nlu" value="&lt;b&gt;自然语言理解&lt;/b&gt;&lt;br&gt;&lt;br&gt;功能:&lt;br&gt;• 意图识别&lt;br&gt;• 参数提取&lt;br&gt;• 上下文管理&lt;br&gt;• 多轮对话&lt;br&gt;&lt;br&gt;支持:&lt;br&gt;• 中文/英文&lt;br&gt;• 复杂指令解析" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D1C4E9;strokeColor=#5E35B1;strokeWidth=2;fontSize=11;align=left;verticalAlign=top;fontColor=#311B92;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="620" y="330" width="200" height="110" as="geometry"/>
+        </mxCell>
+
+        <!-- 任务规划 -->
+        <mxCell id="ai_planning" value="&lt;b&gt;任务规划&lt;/b&gt;&lt;br&gt;&lt;br&gt;功能:&lt;br&gt;• 任务分解&lt;br&gt;• 步骤排序&lt;br&gt;• 依赖分析&lt;br&gt;• 错误恢复&lt;br&gt;&lt;br&gt;模式:&lt;br&gt;• 顺序执行&lt;br&gt;• 并行调度" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D1C4E9;strokeColor=#5E35B1;strokeWidth=2;fontSize=11;align=left;verticalAlign=top;fontColor=#311B92;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="860" y="330" width="200" height="110" as="geometry"/>
+        </mxCell>
+
+        <!-- 视觉识别 -->
+        <mxCell id="ai_vision" value="&lt;b&gt;视觉识别&lt;/b&gt;&lt;br&gt;&lt;br&gt;文件: bounding_box_model.py&lt;br&gt;&lt;br&gt;函数:&lt;br&gt;• get_boxes_from_pro_model()&lt;br&gt;&lt;br&gt;模型:&lt;br&gt;• Gemini 1.5 Pro&lt;br&gt;&lt;br&gt;输出:&lt;br&gt;• 边界框 [x1,y1,x2,y2]&lt;br&gt;• 置信度分数&lt;br&gt;• 类别标签" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D1C4E9;strokeColor=#5E35B1;strokeWidth=2;fontSize=11;align=left;verticalAlign=top;fontColor=#311B92;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="330" width="220" height="110" as="geometry"/>
+        </mxCell>
+
+        <!-- 工具函数调用 -->
+        <mxCell id="ai_tools" value="&lt;b&gt;工具函数调用&lt;/b&gt;&lt;br&gt;&lt;br&gt;文件: tool_declarations.py&lt;br&gt;&lt;br&gt;工具类型:&lt;br&gt;• 机器人控制&lt;br&gt;• 视觉处理&lt;br&gt;• 状态查询&lt;br&gt;&lt;br&gt;机制:&lt;br&gt;• Function Calling&lt;br&gt;• 参数验证&lt;br&gt;• 结果返回" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D1C4E9;strokeColor=#5E35B1;strokeWidth=2;fontSize=11;align=left;verticalAlign=top;fontColor=#311B92;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="1360" y="330" width="220" height="110" as="geometry"/>
+        </mxCell>
+
+        <!-- ========== 第3层：视觉处理层 ========== -->
+        <mxCell id="layer3_bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E0F2F1;strokeColor=#00897B;strokeWidth=3;opacity=30;" vertex="1" parent="1">
+          <mxGeometry x="280" y="500" width="1560" height="200" as="geometry"/>
+        </mxCell>
+        <mxCell id="layer3_title" value="第 3 层：视觉处理层 (Intel RealSense D435I)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=18;fontStyle=1;fontColor=#004D40;" vertex="1" parent="1">
+          <mxGeometry x="300" y="510" width="500" height="30" as="geometry"/>
+        </mxCell>
+
+        <!-- 相机控制 -->
+        <mxCell id="vision_camera" value="&lt;b&gt;相机控制&lt;/b&gt;&lt;br&gt;&lt;br&gt;文件: vision_controller.py&lt;br&gt;&lt;br&gt;类: VisionController&lt;br&gt;&lt;br&gt;配置:&lt;br&gt;• 分辨率: 640×480&lt;br&gt;• 帧率: 30 fps&lt;br&gt;• 格式: RGB-D&lt;br&gt;&lt;br&gt;主要方法:&lt;br&gt;• start() - 启动相机&lt;br&gt;• get_frames() - 获取帧&lt;br&gt;• stop() - 停止相机" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#B2DFDB;strokeColor=#00897B;strokeWidth=2;fontSize=11;align=left;verticalAlign=top;fontColor=#004D40;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="320" y="550" width="240" height="130" as="geometry"/>
+        </mxCell>
+
+        <!-- 物体检测 -->
+        <mxCell id="vision_detection" value="&lt;b&gt;物体检测&lt;/b&gt;&lt;br&gt;&lt;br&gt;方法:&lt;br&gt;• Gemini Vision API&lt;br&gt;• 2D 边界框检测&lt;br&gt;&lt;br&gt;输出:&lt;br&gt;• bbox: [x1,y1,x2,y2]&lt;br&gt;• label: 类别名称&lt;br&gt;• confidence: 0-1&lt;br&gt;&lt;br&gt;特点:&lt;br&gt;• 零样本学习&lt;br&gt;• 自然语言描述" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#B2DFDB;strokeColor=#00897B;strokeWidth=2;fontSize=11;align=left;verticalAlign=top;fontColor=#004D40;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="600" y="550" width="220" height="130" as="geometry"/>
+        </mxCell>
+
+        <!-- 3D 定位 -->
+        <mxCell id="vision_3d" value="&lt;b&gt;3D 定位&lt;/b&gt;&lt;br&gt;&lt;br&gt;函数:&lt;br&gt;• image_to_3d_position()&lt;br&gt;• validate_detection()&lt;br&gt;&lt;br&gt;处理:&lt;br&gt;• 深度滤波 (5×5 median)&lt;br&gt;• 时序平滑&lt;br&gt;• 异常值过滤 (±30mm)&lt;br&gt;&lt;br&gt;输出:&lt;br&gt;• 机器人坐标系 (mm)&lt;br&gt;• 置信度评分" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#B2DFDB;strokeColor=#00897B;strokeWidth=2;fontSize=11;align=left;verticalAlign=top;fontColor=#004D40;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="860" y="550" width="220" height="130" as="geometry"/>
+        </mxCell>
+
+        <!-- 手眼标定 -->
+        <mxCell id="vision_calibration" value="&lt;b&gt;手眼标定&lt;/b&gt;&lt;br&gt;&lt;br&gt;文件: calibrate_hand_eye.py&lt;br&gt;&lt;br&gt;方法:&lt;br&gt;• ChArUco 标定板&lt;br&gt;• AX=XB 求解&lt;br&gt;&lt;br&gt;精度:&lt;br&gt;• 目标: ±3mm&lt;br&gt;&lt;br&gt;输出文件:&lt;br&gt;• calibration_*.npz&lt;br&gt;• T_camera_to_base&lt;br&gt;• T_base_to_camera" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#B2DFDB;strokeColor=#00897B;strokeWidth=2;fontSize=11;align=left;verticalAlign=top;fontColor=#004D40;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="1120" y="550" width="220" height="130" as="geometry"/>
+        </mxCell>
+
+        <!-- 可达性分析 -->
+        <mxCell id="vision_reachability" value="&lt;b&gt;可达性分析&lt;/b&gt;&lt;br&gt;&lt;br&gt;检查项:&lt;br&gt;• 工作空间范围&lt;br&gt;  - 半径: 100-400mm&lt;br&gt;  - 高度: -50 to 300mm&lt;br&gt;• 碰撞检测&lt;br&gt;• 关节限位&lt;br&gt;&lt;br&gt;输出:&lt;br&gt;• is_reachable: bool&lt;br&gt;• reachability_score: 0-1&lt;br&gt;• suggested_approach" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#B2DFDB;strokeColor=#00897B;strokeWidth=2;fontSize=11;align=left;verticalAlign=top;fontColor=#004D40;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="1380" y="550" width="220" height="130" as="geometry"/>
+        </mxCell>
+
+        <!-- ========== 第4层：运动控制层 ========== -->
+        <mxCell id="layer4_bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#EF6C00;strokeWidth=3;opacity=30;" vertex="1" parent="1">
+          <mxGeometry x="280" y="740" width="1560" height="220" as="geometry"/>
+        </mxCell>
+        <mxCell id="layer4_title" value="第 4 层：运动控制层 (100Hz 实时控制)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=18;fontStyle=1;fontColor=#E65100;" vertex="1" parent="1">
+          <mxGeometry x="300" y="750" width="450" height="30" as="geometry"/>
+        </mxCell>
+
+        <!-- UDP 服务器 -->
+        <mxCell id="control_server" value="&lt;b&gt;UDP 服务器&lt;/b&gt;&lt;br&gt;&lt;br&gt;文件: headless_commander.py (161KB)&lt;br&gt;&lt;br&gt;主类:&lt;br&gt;• CommandQueueManager&lt;br&gt;• Command (基类)&lt;br&gt;  - HomeCommand&lt;br&gt;  - MoveJointCommand&lt;br&gt;  - MovePoseCommand&lt;br&gt;  - MoveCartCommand&lt;br&gt;  - JogCommand&lt;br&gt;  - SmoothMotionCommand&lt;br&gt;&lt;br&gt;端口:&lt;br&gt;• 监听: UDP 5001&lt;br&gt;• 响应: UDP 5002" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#EF6C00;strokeWidth=2;fontSize=11;align=left;verticalAlign=top;fontColor=#E65100;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="320" y="790" width="260" height="150" as="geometry"/>
+        </mxCell>
+
+        <!-- 逆运动学 -->
+        <mxCell id="control_ik" value="&lt;b&gt;逆运动学求解&lt;/b&gt;&lt;br&gt;&lt;br&gt;文件: PAROL6_ROBOT.py&lt;br&gt;&lt;br&gt;库: roboticstoolbox-python==1.0.3&lt;br&gt;&lt;br&gt;方法:&lt;br&gt;• IK_LM (Levenberg-Marquardt)&lt;br&gt;• 自适应容差&lt;br&gt;• 奇异点检测&lt;br&gt;&lt;br&gt;DH 参数:&lt;br&gt;• 6 DOF 串联机械臂&lt;br&gt;• 关节限位检查&lt;br&gt;&lt;br&gt;精度: ±1mm" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#EF6C00;strokeWidth=2;fontSize=11;align=left;verticalAlign=top;fontColor=#E65100;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="620" y="790" width="240" height="150" as="geometry"/>
+        </mxCell>
+
+        <!-- 轨迹规划 -->
+        <mxCell id="control_trajectory" value="&lt;b&gt;轨迹规划&lt;/b&gt;&lt;br&gt;&lt;br&gt;文件: smooth_motion.py (32KB)&lt;br&gt;&lt;br&gt;函数:&lt;br&gt;• generate_circle_trajectory()&lt;br&gt;• generate_arc_trajectory()&lt;br&gt;• generate_spline_trajectory()&lt;br&gt;• generate_helix_trajectory()&lt;br&gt;&lt;br&gt;插值:&lt;br&gt;• 线性插值&lt;br&gt;• 三次样条&lt;br&gt;• SLERP (姿态)&lt;br&gt;&lt;br&gt;平滑: scipy.interpolate" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#EF6C00;strokeWidth=2;fontSize=11;align=left;verticalAlign=top;fontColor=#E65100;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="900" y="790" width="260" height="150" as="geometry"/>
+        </mxCell>
+
+        <!-- 速度控制 -->
+        <mxCell id="control_speed" value="&lt;b&gt;速度控制&lt;/b&gt;&lt;br&gt;&lt;br&gt;功能:&lt;br&gt;• 速度同步&lt;br&gt;  - 多关节协调&lt;br&gt;  - 防止超速&lt;br&gt;• 加减速规划&lt;br&gt;  - 梯形曲线&lt;br&gt;  - S 曲线平滑&lt;br&gt;&lt;br&gt;参数:&lt;br&gt;• speed_percentage: 0-100%&lt;br&gt;• duration: 秒&lt;br&gt;• acceleration: 自动计算" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#EF6C00;strokeWidth=2;fontSize=11;align=left;verticalAlign=top;fontColor=#E65100;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="790" width="220" height="150" as="geometry"/>
+        </mxCell>
+
+        <!-- 命令队列 -->
+        <mxCell id="control_queue" value="&lt;b&gt;命令队列&lt;/b&gt;&lt;br&gt;&lt;br&gt;管理器: CommandQueueManager&lt;br&gt;&lt;br&gt;功能:&lt;br&gt;• 命令排队&lt;br&gt;• 优先级调度&lt;br&gt;• 状态跟踪&lt;br&gt;  - QUEUED&lt;br&gt;  - EXECUTING&lt;br&gt;  - COMPLETED&lt;br&gt;  - FAILED&lt;br&gt;&lt;br&gt;特性:&lt;br&gt;• 非阻塞模式&lt;br&gt;• ACK 机制" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#EF6C00;strokeWidth=2;fontSize=11;align=left;verticalAlign=top;fontColor=#E65100;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="1460" y="790" width="200" height="150" as="geometry"/>
+        </mxCell>
+
+        <!-- ========== 第5层：硬件接口层 ========== -->
+        <mxCell id="layer5_bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECEFF1;strokeColor=#546E7A;strokeWidth=3;opacity=30;" vertex="1" parent="1">
+          <mxGeometry x="280" y="1000" width="1560" height="160" as="geometry"/>
+        </mxCell>
+        <mxCell id="layer5_title" value="第 5 层：硬件接口层" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=18;fontStyle=1;fontColor=#263238;" vertex="1" parent="1">
+          <mxGeometry x="300" y="1010" width="300" height="30" as="geometry"/>
+        </mxCell>
+
+        <!-- PAROL6 机械臂 -->
+        <mxCell id="hardware_robot" value="&lt;b&gt;PAROL6 机械臂&lt;/b&gt;&lt;br&gt;&lt;br&gt;规格:&lt;br&gt;• 6 轴串联&lt;br&gt;• 工作半径: 400mm&lt;br&gt;• 最大负载: 1.2kg&lt;br&gt;• 重复精度: ±0.5mm&lt;br&gt;&lt;br&gt;关节:&lt;br&gt;• 步进电机驱动&lt;br&gt;• 限位开关&lt;br&gt;• 编码器反馈" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#CFD8DC;strokeColor=#546E7A;strokeWidth=2;fontSize=11;align=left;verticalAlign=top;fontColor=#263238;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="320" y="1050" width="220" height="90" as="geometry"/>
+        </mxCell>
+
+        <!-- 电动夹爪 -->
+        <mxCell id="hardware_gripper_e" value="&lt;b&gt;电动夹爪&lt;/b&gt;&lt;br&gt;&lt;br&gt;控制:&lt;br&gt;• 位置: 0-255&lt;br&gt;• 速度: 0-255&lt;br&gt;• 力: 100-1000mA&lt;br&gt;&lt;br&gt;功能:&lt;br&gt;• 精确控制&lt;br&gt;• 物体检测&lt;br&gt;• 状态反馈" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#CFD8DC;strokeColor=#546E7A;strokeWidth=2;fontSize=11;align=left;verticalAlign=top;fontColor=#263238;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="580" y="1050" width="180" height="90" as="geometry"/>
+        </mxCell>
+
+        <!-- 气动夹爪 -->
+        <mxCell id="hardware_gripper_p" value="&lt;b&gt;气动夹爪&lt;/b&gt;&lt;br&gt;&lt;br&gt;控制:&lt;br&gt;• 数字输出 (开/关)&lt;br&gt;• 端口: 1 或 2&lt;br&gt;&lt;br&gt;特点:&lt;br&gt;• 快速响应&lt;br&gt;• 大夹持力&lt;br&gt;• 简单可靠" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#CFD8DC;strokeColor=#546E7A;strokeWidth=2;fontSize=11;align=left;verticalAlign=top;fontColor=#263238;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="800" y="1050" width="180" height="90" as="geometry"/>
+        </mxCell>
+
+        <!-- 串口通信 -->
+        <mxCell id="hardware_serial" value="&lt;b&gt;串口通信&lt;/b&gt;&lt;br&gt;&lt;br&gt;协议:&lt;br&gt;• 波特率: 115200&lt;br&gt;• 数据位: 8&lt;br&gt;• 停止位: 1&lt;br&gt;• 校验: None&lt;br&gt;&lt;br&gt;接口:&lt;br&gt;• USB (COM/ttyUSB)&lt;br&gt;• pyserial 库&lt;br&gt;&lt;br&gt;频率: 100Hz" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#CFD8DC;strokeColor=#546E7A;strokeWidth=2;fontSize=11;align=left;verticalAlign=top;fontColor=#263238;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="1050" width="200" height="90" as="geometry"/>
+        </mxCell>
+
+        <!-- I/O 端口 -->
+        <mxCell id="hardware_io" value="&lt;b&gt;I/O 端口&lt;/b&gt;&lt;br&gt;&lt;br&gt;输入:&lt;br&gt;• IN1, IN2&lt;br&gt;• 急停按钮&lt;br&gt;&lt;br&gt;输出:&lt;br&gt;• OUT1, OUT2&lt;br&gt;• LED 指示&lt;br&gt;&lt;br&gt;功能:&lt;br&gt;• 状态监控&lt;br&gt;• 外设控制" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#CFD8DC;strokeColor=#546E7A;strokeWidth=2;fontSize=11;align=left;verticalAlign=top;fontColor=#263238;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="1260" y="1050" width="180" height="90" as="geometry"/>
+        </mxCell>
+
+        <!-- 急停系统 -->
+        <mxCell id="hardware_estop" value="&lt;b&gt;急停系统&lt;/b&gt;&lt;br&gt;&lt;br&gt;监控:&lt;br&gt;• 实时检测&lt;br&gt;• 100Hz 轮询&lt;br&gt;&lt;br&gt;响应:&lt;br&gt;• 立即停止运动&lt;br&gt;• 清空命令队列&lt;br&gt;• 禁用机器人&lt;br&gt;&lt;br&gt;恢复:&lt;br&gt;• 按 'e' 键重新启用" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#CFD8DC;strokeColor=#546E7A;strokeWidth=2;fontSize=11;align=left;verticalAlign=top;fontColor=#263238;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="1480" y="1050" width="200" height="90" as="geometry"/>
+        </mxCell>
+
+        <!-- ========== 数据流连线 ========== -->
+
+        <!-- 用户层 -> AI层 -->
+        <mxCell id="flow1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#1976D2;strokeWidth=3;endArrow=classic;endFill=1;startArrow=classic;startFill=1;" edge="1" parent="1" source="user_nlp" target="ai_gemini">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="440" y="250"/>
+              <mxPoint x="450" y="250"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flow1_label" value="自然语言&lt;br&gt;命令/响应" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontColor=#1976D2;fontStyle=1;backgroundColor=#E3F2FD;rounded=1;" vertex="1" connectable="0" parent="flow1">
+          <mxGeometry x="-0.1" y="1" relative="1" as="geometry">
+            <mxPoint x="25" y="1" as="offset"/>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="flow2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#1976D2;strokeWidth=3;endArrow=classic;endFill=1;startArrow=classic;startFill=1;" edge="1" parent="1" source="user_api" target="control_server">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="720" y="250"/>
+              <mxPoint x="270" y="250"/>
+              <mxPoint x="270" y="865"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flow2_label" value="UDP 命令&lt;br&gt;5001/5002" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontColor=#1976D2;fontStyle=1;backgroundColor=#E3F2FD;rounded=1;" vertex="1" connectable="0" parent="flow2">
+          <mxGeometry x="-0.8" y="2" relative="1" as="geometry">
+            <mxPoint x="8" y="-5" as="offset"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- AI层 -> 视觉层 -->
+        <mxCell id="flow3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#5E35B1;strokeWidth=3;endArrow=classic;endFill=1;startArrow=classic;startFill=1;" edge="1" parent="1" source="ai_vision" target="vision_detection">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1210" y="470"/>
+              <mxPoint x="710" y="470"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flow3_label" value="图像识别&lt;br&gt;请求/结果" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontColor=#5E35B1;fontStyle=1;backgroundColor=#E8EAF6;rounded=1;" vertex="1" connectable="0" parent="flow3">
+          <mxGeometry x="-0.1" y="2" relative="1" as="geometry">
+            <mxPoint as="offset"/>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="flow4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#5E35B1;strokeWidth=3;endArrow=classic;endFill=1;" edge="1" parent="1" source="ai_tools" target="control_server">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1470" y="470"/>
+              <mxPoint x="1880" y="470"/>
+              <mxPoint x="1880" y="865"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flow4_label" value="工具函数调用" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontColor=#5E35B1;fontStyle=1;backgroundColor=#E8EAF6;rounded=1;" vertex="1" connectable="0" parent="flow4">
+          <mxGeometry x="-0.8" y="1" relative="1" as="geometry">
+            <mxPoint x="-10" y="-5" as="offset"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- 视觉层 -> 控制层 -->
+        <mxCell id="flow5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#00897B;strokeWidth=3;endArrow=classic;endFill=1;" edge="1" parent="1" source="vision_3d" target="control_ik">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="970" y="710"/>
+              <mxPoint x="740" y="710"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flow5_label" value="3D 位置&lt;br&gt;坐标 (mm)" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontColor=#00897B;fontStyle=1;backgroundColor=#E0F2F1;rounded=1;" vertex="1" connectable="0" parent="flow5">
+          <mxGeometry x="-0.1" y="1" relative="1" as="geometry">
+            <mxPoint as="offset"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- 控制层 -> 硬件层 -->
+        <mxCell id="flow6" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#EF6C00;strokeWidth=3;endArrow=classic;endFill=1;startArrow=classic;startFill=1;" edge="1" parent="1" source="control_server" target="hardware_serial">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="450" y="980"/>
+              <mxPoint x="1120" y="980"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flow6_label" value="串口命令&lt;br&gt;100Hz" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontColor=#EF6C00;fontStyle=1;backgroundColor=#FFF3E0;rounded=1;" vertex="1" connectable="0" parent="flow6">
+          <mxGeometry x="-0.1" y="2" relative="1" as="geometry">
+            <mxPoint as="offset"/>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="flow7" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#546E7A;strokeWidth=3;endArrow=classic;endFill=1;" edge="1" parent="1" source="hardware_serial" target="hardware_robot">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1120" y="1160"/>
+              <mxPoint x="430" y="1160"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flow7_label" value="关节命令" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontColor=#546E7A;fontStyle=1;backgroundColor=#ECEFF1;rounded=1;" vertex="1" connectable="0" parent="flow7">
+          <mxGeometry x="-0.7" y="1" relative="1" as="geometry">
+            <mxPoint x="1" y="-5" as="offset"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- 相机 -> 视觉处理 -->
+        <mxCell id="flow8" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#00897B;strokeWidth=2;endArrow=classic;endFill=1;dashed=1;" edge="1" parent="1" source="vision_camera" target="vision_detection">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="flow8_label" value="RGB-D&lt;br&gt;图像流" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=9;fontColor=#00897B;backgroundColor=#E0F2F1;rounded=1;" vertex="1" connectable="0" parent="flow8">
+          <mxGeometry x="-0.1" y="1" relative="1" as="geometry">
+            <mxPoint as="offset"/>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="flow9" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#00897B;strokeWidth=2;endArrow=classic;endFill=1;dashed=1;" edge="1" parent="1" source="vision_detection" target="vision_3d">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="flow9_label" value="2D Box" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=9;fontColor=#00897B;backgroundColor=#E0F2F1;rounded=1;" vertex="1" connectable="0" parent="flow9">
+          <mxGeometry x="-0.1" y="1" relative="1" as="geometry">
+            <mxPoint as="offset"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- 控制层内部流 -->
+        <mxCell id="flow10" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#EF6C00;strokeWidth=2;endArrow=classic;endFill=1;dashed=1;" edge="1" parent="1" source="control_ik" target="control_trajectory">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="flow10_label" value="关节角度" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=9;fontColor=#EF6C00;backgroundColor=#FFF3E0;rounded=1;" vertex="1" connectable="0" parent="flow10">
+          <mxGeometry x="-0.1" y="1" relative="1" as="geometry">
+            <mxPoint as="offset"/>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="flow11" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#EF6C00;strokeWidth=2;endArrow=classic;endFill=1;dashed=1;" edge="1" parent="1" source="control_trajectory" target="control_speed">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="flow11_label" value="轨迹点" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=9;fontColor=#EF6C00;backgroundColor=#FFF3E0;rounded=1;" vertex="1" connectable="0" parent="flow11">
+          <mxGeometry x="-0.1" y="1" relative="1" as="geometry">
+            <mxPoint as="offset"/>
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

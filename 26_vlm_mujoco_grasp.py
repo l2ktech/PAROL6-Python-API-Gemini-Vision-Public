@@ -28,7 +28,7 @@ import json
 import time
 import numpy as np
 from pathlib import Path
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, Tuple
 from dataclasses import dataclass
 
 # ==================== 路径配置 ====================
@@ -68,6 +68,78 @@ class GraspResult:
     grasp_force: float
     final_object_pos: np.ndarray
     message: str
+
+
+# ==================== IK 求解器 ====================
+
+class SimpleIKSolver:
+    """
+    简化的逆运动学求解器
+    
+    使用雅可比矩阵 + 阻尼最小二乘法将笛卡尔位置转换为关节角度
+    """
+    
+    def __init__(self, model, data):
+        self.model = model
+        self.data = data
+        # 获取末端执行器 site ID
+        self.ee_site_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SITE, 'end_effector')
+        if self.ee_site_id < 0:
+            print("[警告] 未找到 end_effector site，使用默认位置")
+            self.ee_site_id = 0
+    
+    def solve(self, target_pos: np.ndarray, current_q: np.ndarray = None, 
+              max_iter: int = 100, tol: float = 0.02) -> Tuple[np.ndarray, float]:
+        """
+        求解逆运动学
+        
+        参数:
+            target_pos: 目标位置 [x, y, z]
+            current_q: 当前关节角度，None 则使用零位
+            max_iter: 最大迭代次数
+            tol: 收敛阈值
+        
+        返回:
+            (关节角度, 最终距离)
+        """
+        if current_q is None:
+            current_q = np.zeros(6)
+        
+        q = current_q.copy()
+        dist = float('inf')
+        
+        for iteration in range(max_iter):
+            # 设置关节并更新运动学
+            self.data.qpos[:6] = q
+            mujoco.mj_forward(self.model, self.data)
+            
+            # 计算误差
+            ee_pos = self.data.site_xpos[self.ee_site_id]
+            error = target_pos - ee_pos
+            dist = np.linalg.norm(error)
+            
+            if dist < tol:
+                return q, dist
+            
+            # 获取雅可比矩阵
+            jacp = np.zeros((3, self.model.nv))
+            mujoco.mj_jacSite(self.model, self.data, jacp, None, self.ee_site_id)
+            
+            # 阻尼最小二乘法
+            J = jacp[:, :6]
+            damping = 0.1
+            JJT = J @ J.T + damping**2 * np.eye(3)
+            dq = J.T @ np.linalg.solve(JJT, error)
+            
+            # 更新关节角度
+            q = q + 0.5 * dq
+            
+            # 限制关节范围（根据 PAROL6 实际范围）
+            q = np.clip(q, 
+                       [-1.7, -0.98, -2.0, -2.0, -2.1, -6.28],
+                       [1.7, 1.0, 1.3, 2.0, 2.1, 6.28])
+        
+        return q, dist
 
 
 # ==================== VLM 客户端 ====================
@@ -159,155 +231,70 @@ class GraspSimulator:
         self._create_scene()
         self._init_joint_indices()
         
+        # 初始化 IK 求解器
+        self.ik_solver = SimpleIKSolver(self.model, self.data)
+        
         # 初始化仿真状态，确保物体位置正确
         mujoco.mj_forward(self.model, self.data)
         self.step(100)  # 让物体稳定
         
-        print("[MuJoCo] 物理抓取仿真器初始化完成")
+        print("[MuJoCo] 物理抓取仿真器初始化完成（包含 IK 求解器）")
     
     def _create_scene(self):
-        """创建带物体的抓取场景"""
-        scene_xml = '''<?xml version="1.0"?>
-<mujoco model="parol6_grasp_scene">
-  <compiler angle="radian" autolimits="true"/>
-  <option integrator="implicitfast" timestep="0.001"/>
-  
-  <default>
-    <default class="PAROL6">
-      <joint armature="0.1" damping="50.0"/>
-      <position kp="500" forcerange="-500 500"/>
-    </default>
-    <default class="gripper">
-      <joint armature="0.1" damping="10.0"/>
-      <position kp="1000" forcerange="-100 100"/>
-    </default>
-  </default>
-  
-  <asset>
-    <texture type="skybox" builtin="gradient" rgb1="0.4 0.6 0.8" rgb2="0.8 0.8 0.8" width="512" height="512"/>
-    <texture name="plane_tex" type="2d" builtin="checker" rgb1="0.9 0.9 0.9" rgb2="0.7 0.7 0.7" width="512" height="512"/>
-    <material name="plane_mat" texture="plane_tex" texrepeat="5 5"/>
-  </asset>
-  
-  <worldbody>
-    <!-- 地面 -->
-    <geom name="ground" type="plane" size="2 2 0.1" material="plane_mat"/>
-    <light pos="0 0 2" dir="0 0 -1"/>
-    <light pos="1 1 2" dir="-0.5 -0.5 -1" diffuse="0.5 0.5 0.5"/>
-
-    <!-- 桌子 -->
-    <body name="table" pos="0.3 0 0.4">
-      <geom name="table_top" type="box" size="0.4 0.4 0.02" rgba="0.6 0.4 0.3 1"/>
-      <geom name="table_leg1" type="cylinder" size="0.03 0.2" pos="0.35 0.35 -0.2" rgba="0.5 0.3 0.2 1"/>
-      <geom name="table_leg2" type="cylinder" size="0.03 0.2" pos="-0.35 0.35 -0.2" rgba="0.5 0.3 0.2 1"/>
-      <geom name="table_leg3" type="cylinder" size="0.03 0.2" pos="0.35 -0.35 -0.2" rgba="0.5 0.3 0.2 1"/>
-      <geom name="table_leg4" type="cylinder" size="0.03 0.2" pos="-0.35 -0.35 -0.2" rgba="0.5 0.3 0.2 1"/>
-    </body>
-
-    <!-- 红色杯子 -->
-    <body name="target_cup" pos="0.17 -0.21 0.35">
-      <freejoint name="cup_joint"/>
-      <geom name="cup_body" type="cylinder" size="0.02 0.03" rgba="1.0 0.3 0.3 1" 
-            density="200" friction="1.5 0.1 0.1"/>
-    </body>
-
-    <!-- 蓝色方块 -->
-    <body name="target_block" pos="0.15 -0.22 0.34">
-      <freejoint name="block_joint"/>
-      <geom name="block_body" type="box" size="0.015 0.015 0.015" rgba="0.3 0.3 1.0 1" 
-            density="500" friction="1.5 0.1 0.1"/>
-    </body>
-
-    <!-- PAROL6机械臂 -->
-    <body name="base_link" pos="0 0 0.42">
-      <inertial pos="0 0 0.03" mass="0.8" diaginertia="0.001 0.001 0.001"/>
-      <geom name="base" type="cylinder" size="0.05 0.03" rgba="0.2 0.2 0.2 1"/>
-      
-      <!-- L1 base rotation -->
-      <body name="L1" pos="0 0 0.05">
-        <inertial pos="0 0 0.05" mass="0.6" diaginertia="0.001 0.001 0.001"/>
-        <joint name="L1" type="hinge" axis="0 0 1" range="-2.97 2.97" class="PAROL6"/>
-        <geom type="cylinder" size="0.04 0.05" rgba="0.3 0.3 0.8 1"/>
+        """创建带物体的抓取场景 - 使用验证过的 parol6_fixed.xml 模型"""
+        import xml.etree.ElementTree as ET
         
-        <!-- L2 shoulder -->
-        <body name="L2" pos="0.023 0 0.11">
-          <inertial pos="0 -0.09 0" mass="0.5" diaginertia="0.001 0.001 0.001"/>
-          <joint name="L2" type="hinge" axis="0 1 0" range="-1.74 0.78" class="PAROL6"/>
-          <geom type="capsule" fromto="0 0 0 0 -0.18 0" size="0.03" rgba="0.8 0.3 0.3 1"/>
-          
-          <!-- L3 elbow -->
-          <body name="L3" pos="0 -0.18 0">
-            <inertial pos="0.07 0 0" mass="0.5" diaginertia="0.0005 0.0005 0.0005"/>
-            <joint name="L3" type="hinge" axis="0 1 0" range="-1.74 1.40" class="PAROL6"/>
-            <geom type="capsule" fromto="0 0 0 0.149 0 0" size="0.025" rgba="0.3 0.8 0.3 1"/>
-            
-            <!-- L4 wrist1 -->
-            <body name="L4" pos="0.149 0 0">
-              <inertial pos="0 0 -0.05" mass="0.3" diaginertia="0.0003 0.0003 0.0003"/>
-              <joint name="L4" type="hinge" axis="1 0 0" range="-3.14 3.14" class="PAROL6"/>
-              <geom type="cylinder" size="0.02 0.02" rgba="0.8 0.8 0.3 1"/>
-              
-              <!-- L5 wrist2 -->
-              <body name="L5" pos="0 0 -0.155">
-                <inertial pos="0 0 0" mass="0.2" diaginertia="0.0001 0.0001 0.0001"/>
-                <joint name="L5" type="hinge" axis="0 1 0" range="-2.10 2.10" class="PAROL6"/>
-                <geom type="cylinder" size="0.02 0.015" rgba="0.8 0.3 0.8 1"/>
-                
-                <!-- L6 wrist3 -->
-                <body name="L6" pos="0 -0.06 0">
-                  <inertial pos="0 0 0" mass="0.1" diaginertia="0.00005 0.00005 0.00005"/>
-                  <joint name="L6" type="hinge" axis="0 0 1" range="-6.28 6.28" class="PAROL6"/>
-                  <geom type="cylinder" size="0.018 0.01" rgba="0.3 0.8 0.8 1"/>
-                  
-                  <!-- 末端site -->
-                  <site name="end_effector" pos="0 0 -0.1" size="0.01"/>
-                  
-                    <!-- 夹爪基座 -->
-                    <body name="gripper_base" pos="0 0 -0.03">
-                      <inertial pos="0 0 0" mass="0.1" diaginertia="0.0001 0.0001 0.0001"/>
-                      <geom type="box" size="0.02 0.03 0.015" rgba="0.5 0.5 0.5 1"/>
-                      
-                      <!-- 左手指 -->
-                      <body name="gripper_left" pos="0 0.02 -0.04">
-                        <inertial pos="0 0.01 0" mass="0.05" diaginertia="0.00003 0.00003 0.00003"/>
-                        <joint name="rh_l1" type="slide" axis="0 1 0" range="0 0.04" class="gripper"/>
-                        <geom type="box" size="0.015 0.005 0.03" rgba="0.4 0.4 0.4 1" friction="1.5 0.1 0.1"/>
-                      </body>
-                      
-                      <!-- 右手指 -->
-                      <body name="gripper_right" pos="0 -0.02 -0.04">
-                        <inertial pos="0 -0.01 0" mass="0.05" diaginertia="0.00003 0.00003 0.00003"/>
-                        <joint name="rh_r1" type="slide" axis="0 -1 0" range="0 0.04" class="gripper"/>
-                        <geom type="box" size="0.015 0.005 0.03" rgba="0.4 0.4 0.4 1" friction="1.5 0.1 0.1"/>
-                      </body>
-                    </body>
-                </body>
-              </body>
-            </body>
-          </body>
-        </body>
-      </body>
-    </body>
-  </worldbody>
-  
-  <actuator>
-    <!-- 机械臂关节 -->
-    <position name="L1_act" joint="L1" class="PAROL6"/>
-    <position name="L2_act" joint="L2" class="PAROL6"/>
-    <position name="L3_act" joint="L3" class="PAROL6"/>
-    <position name="L4_act" joint="L4" class="PAROL6"/>
-    <position name="L5_act" joint="L5" class="PAROL6"/>
-    <position name="L6_act" joint="L6" class="PAROL6"/>
-    
-    <!-- 夹爪 -->
-    <position name="rh_l1_motor" joint="rh_l1" ctrlrange="0 0.04" class="gripper"/>
-    <position name="rh_r1_motor" joint="rh_r1" ctrlrange="0 0.04" class="gripper"/>
-  </actuator>
-</mujoco>'''
+        # 基础模型路径
+        base_model_path = Path("/l2k/home/wzy/21-L2Karm/11.1-lerobot-mujoco-smolvla/asset/parol6/parol6_fixed.xml")
         
-        self.model = mujoco.MjModel.from_xml_string(scene_xml)
+        # 读取原始 XML
+        tree = ET.parse(base_model_path)
+        root = tree.getroot()
+        
+        # 找到 worldbody
+        worldbody = root.find('worldbody')
+        
+        # 添加红色杯子（在机械臂可达范围内）
+        # parol6_fixed.xml 中桌面约在 Z=0.87m，末端可达 Z 约 0.9-1.2m
+        cup_body = ET.SubElement(worldbody, 'body')
+        cup_body.set('name', 'target_cup')
+        cup_body.set('pos', '0.12 0.05 0.92')  # 桌面上方
+        
+        cup_joint = ET.SubElement(cup_body, 'freejoint')
+        cup_joint.set('name', 'cup_joint')
+        
+        cup_geom = ET.SubElement(cup_body, 'geom')
+        cup_geom.set('name', 'cup_body')
+        cup_geom.set('type', 'cylinder')
+        cup_geom.set('size', '0.025 0.04')  # 稍大一点，更容易抓取
+        cup_geom.set('rgba', '1.0 0.3 0.3 1')
+        cup_geom.set('density', '500')  # 增加密度，更稳定
+        cup_geom.set('friction', '1.5 0.1 0.1')
+        
+        # 添加蓝色方块
+        block_body = ET.SubElement(worldbody, 'body')
+        block_body.set('name', 'target_block')
+        block_body.set('pos', '0.08 -0.08 0.91')  # 桌面上方
+        
+        block_joint = ET.SubElement(block_body, 'freejoint')
+        block_joint.set('name', 'block_joint')
+        
+        block_geom = ET.SubElement(block_body, 'geom')
+        block_geom.set('name', 'block_body')
+        block_geom.set('type', 'box')
+        block_geom.set('size', '0.02 0.02 0.02')  # 稍大一点
+        block_geom.set('rgba', '0.3 0.3 1.0 1')
+        block_geom.set('density', '800')  # 增加密度，更稳定
+        block_geom.set('friction', '1.5 0.1 0.1')
+        
+        # 保存到与原模型相同的目录（mesh 使用相对路径）
+        temp_path = base_model_path.parent / "parol6_grasp_scene.xml"
+        tree.write(str(temp_path), encoding='unicode')
+        
+        # 加载模型
+        self.model = mujoco.MjModel.from_xml_path(str(temp_path))
         self.data = mujoco.MjData(self.model)
-        print("[MuJoCo] 抓取场景创建完成")
+        print("[MuJoCo] 抓取场景创建完成（使用 parol6_fixed.xml 模型）")
     
     def _init_joint_indices(self):
         """初始化关节索引"""
@@ -375,47 +362,71 @@ class GraspSimulator:
         initial_z = target_pos[2]
         print(f"  目标位置: [{target_pos[0]:.3f}, {target_pos[1]:.3f}, {target_pos[2]:.3f}]")
         
-        # 抓取轨迹 - 使用验证过的轨迹（来自 18_mujoco_grasp_simulation.py）
-        # 杰子在 [0.17, -0.21, 0.35]，可达范围: X[0.13-0.19], Y[-0.23,-0.21], Z[0.30-0.32]
+        # ===== 使用 IK 求解器动态计算轨迹 =====
         
         # 1. 待机位置
         print("  阶段1: 待机位置")
         self.set_arm_joints([0, 0, 0, 0, 0, 0])
         self.set_gripper(0.03)  # 张开夹爪
+        self.step(400)
+        self._update_viewer()
+        
+        # 2. 计算预抓取位置（目标上方 10cm）
+        pre_grasp_pos = target_pos.copy()
+        pre_grasp_pos[2] += 0.10  # 上方 10cm
+        print(f"  阶段2: IK 求解预抓取位置 ({pre_grasp_pos[0]:.3f}, {pre_grasp_pos[1]:.3f}, {pre_grasp_pos[2]:.3f})")
+        
+        pre_q, pre_dist = self.ik_solver.solve(pre_grasp_pos)
+        if pre_dist > 0.05:
+            print(f"    [警告] IK 误差较大: {pre_dist:.3f}m，使用备用轨迹")
+            # 使用备用固定轨迹
+            pre_q = np.array([0.5, -0.5, 0.5, 0, 0, 0])
+        else:
+            print(f"    IK 成功，误差: {pre_dist:.3f}m")
+        
+        self.set_arm_joints(pre_q.tolist())
         self.step(500)
         self._update_viewer()
         
-        # 2. 移动到目标上方
-        print("  阶段2: 移动到目标上方")
-        self.set_arm_joints([0.5, -0.5, 0.5, 0, 0, 0])
+        # 3. 计算抓取位置（物体中心附近）
+        grasp_pos = target_pos.copy()
+        grasp_pos[2] -= 0.02  # 略低于物体中心，确保夹爪接触
+        print(f"  阶段3: IK 求解抓取位置 ({grasp_pos[0]:.3f}, {grasp_pos[1]:.3f}, {grasp_pos[2]:.3f})")
+        
+        grasp_q, grasp_dist = self.ik_solver.solve(grasp_pos, pre_q)
+        if grasp_dist > 0.05:
+            print(f"    [警告] IK 误差较大: {grasp_dist:.3f}m，使用备用轨迹")
+            grasp_q = np.array([0.8, -0.8, 0.6, 0, 0, 0])
+        else:
+            print(f"    IK 成功，误差: {grasp_dist:.3f}m")
+        
+        self.set_arm_joints(grasp_q.tolist())
         self.step(500)
         self._update_viewer()
         
-        # 3. 接近目标
-        print("  阶段3: 下降接近")
-        self.set_arm_joints([0.8, -0.8, 0.6, 0, 0, 0])
-        self.step(500)
-        self._update_viewer()
-        
-        # 4. 精确定位
-        print("  阶段4: 精确定位")
-        self.set_arm_joints([1.0, -1.0, 0.8, 0, 0, 0])
-        self.step(500)
-        self._update_viewer()
-        
-        # 5. 闭合夹爪
-        print("  阶段5: 闭合夹爪")
+        # 4. 闭合夹爪
+        print("  阶段4: 闭合夹爪")
         self.set_gripper(0.0)
         self.step(400)
         self._update_viewer()
         
-        # 6. 提升物体
-        print("  阶段6: 提升物体")
-        self.set_arm_joints([0.5, -0.3, 0.3, 0, 0, 0])
-        self.step(500)
+        # 5. 提升物体（IK 求解提升位置）
+        lift_pos = grasp_pos.copy()
+        lift_pos[2] += 0.12  # 提升 12cm
+        print(f"  阶段5: IK 求解提升位置 ({lift_pos[0]:.3f}, {lift_pos[1]:.3f}, {lift_pos[2]:.3f})")
+        
+        lift_q, lift_dist = self.ik_solver.solve(lift_pos, grasp_q)
+        if lift_dist > 0.05:
+            print(f"    [警告] IK 误差较大: {lift_dist:.3f}m")
+            lift_q = np.array([0.5, -0.3, 0.3, 0, 0, 0])
+        else:
+            print(f"    IK 成功，误差: {lift_dist:.3f}m")
+        
+        self.set_arm_joints(lift_q.tolist())
+        self.step(600)
         self._update_viewer()
         
-        # 7. 检查结果
+        # 6. 检查结果
         final_pos = self.get_object_position(target)
         lift_height = final_pos[2] - initial_z
         lifted = lift_height > 0.03

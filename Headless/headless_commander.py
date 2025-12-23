@@ -162,6 +162,34 @@ if my_os == "Windows":
                 break
             except serial.SerialException:
                 logger.error(f"Could not open port {com_port}. Please try again.")
+else:
+    # Linux - use --com-port argument or try common ports
+    ser = None
+    com_port_str = args.com_port if args.com_port else None
+    
+    if com_port_str:
+        try:
+            ser = serial.Serial(port=com_port_str, baudrate=3000000, timeout=0)
+            logger.info(f"Connected to {com_port_str}")
+        except serial.SerialException as e:
+            logger.error(f"Could not open {com_port_str}: {e}")
+            ser = None
+    
+    # Try common Linux ports if not connected
+    if ser is None:
+        common_ports = ['/dev/ttyACM0', '/dev/ttyACM1', '/dev/ttyACM2', '/dev/ttyUSB0', '/dev/ttyUSB1']
+        for port in common_ports:
+            try:
+                ser = serial.Serial(port=port, baudrate=3000000, timeout=0)
+                com_port_str = port
+                logger.info(f"Auto-connected to {port}")
+                break
+            except serial.SerialException:
+                continue
+    
+    if ser is None:
+        logger.warning("No serial port connected. Robot commands will fail.")
+        com_port_str = "/dev/ttyACM0"  # Default for reconnection attempts
 
 # in big endian machines, first byte of binary representation of the multibyte data-type is stored first. 
 int_to_3_bytes = struct.Struct('>I').pack # BIG endian order

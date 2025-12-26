@@ -49,10 +49,19 @@ except ImportError:
 
 # ==================== VLM 配置 ====================
 
-# 使用 cli-proxy-api
-API_BASE = "http://localhost:8317/v1"
-API_KEY = "cliproxy-ag-b9cd9ab23f51968c1afdf8fd2b7a6e26"
-MODEL = "gpt-5.1"
+# 优先从环境变量读取，否则使用默认值
+API_BASE = os.environ.get("VLM_API_BASE", "http://localhost:8317/v1")
+API_KEY = os.environ.get("VLM_API_KEY", "")  # 必须通过环境变量设置
+MODEL = os.environ.get("VLM_MODEL", "gpt-4o")
+
+# 检查 API 密钥
+if not API_KEY:
+    config_file = Path.home() / ".config" / "vlm" / "api_key"
+    if config_file.exists():
+        API_KEY = config_file.read_text().strip()
+    else:
+        print("[警告] 未设置 VLM_API_KEY 环境变量")
+        API_KEY = "test-key-placeholder"
 
 # ==================== VLM 客户端 ====================
 

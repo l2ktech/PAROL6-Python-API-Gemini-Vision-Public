@@ -53,9 +53,20 @@ except ImportError:
 
 # ==================== VLM 配置 ====================
 
-API_BASE = "http://localhost:8317/v1"
-API_KEY = "cliproxy-ag-b9cd9ab23f51968c1afdf8fd2b7a6e26"
-MODEL = "gpt-5.1"
+# 优先从环境变量读取，否则使用默认值
+API_BASE = os.environ.get("VLM_API_BASE", "http://localhost:8317/v1")
+API_KEY = os.environ.get("VLM_API_KEY", "")  # 必须通过环境变量设置
+MODEL = os.environ.get("VLM_MODEL", "gpt-4o")
+
+# 检查 API 密钥
+if not API_KEY:
+    # 尝试从配置文件读取
+    config_file = Path.home() / ".config" / "vlm" / "api_key"
+    if config_file.exists():
+        API_KEY = config_file.read_text().strip()
+    else:
+        print("[警告] 未设置 VLM_API_KEY 环境变量，使用测试密钥")
+        API_KEY = "test-key-placeholder"
 
 
 # ==================== 数据类 ====================
@@ -244,8 +255,17 @@ class GraspSimulator:
         """创建带物体的抓取场景 - 使用验证过的 parol6_fixed.xml 模型"""
         import xml.etree.ElementTree as ET
         
-        # 基础模型路径
-        base_model_path = Path("/l2k/home/wzy/21-L2Karm/11.1-lerobot-mujoco-smolvla/asset/parol6/parol6_fixed.xml")
+        # 基础模型路径：优先使用环境变量，否则使用相对路径
+        model_path_env = os.environ.get("PAROL6_MODEL_PATH")
+        if model_path_env:
+            base_model_path = Path(model_path_env)
+        else:
+            # 相对于项目根目录
+            base_model_path = PROJECT_ROOT / "11.1-lerobot-mujoco-smolvla" / "asset" / "parol6" / "parol6_fixed.xml"
+        
+        if not base_model_path.exists():
+            raise FileNotFoundError(f"PAROL6 模型文件不存在: {base_model_path}\n"
+                                    f"请设置 PAROL6_MODEL_PATH 环境变量或确保文件存在")
         
         # 读取原始 XML
         tree = ET.parse(base_model_path)
@@ -378,9 +398,16 @@ class GraspSimulator:
         
         pre_q, pre_dist = self.ik_solver.solve(pre_grasp_pos)
         if pre_dist > 0.05:
-            print(f"    [警告] IK 误差较大: {pre_dist:.3f}m，使用备用轨迹")
-            # 使用备用固定轨迹
-            pre_q = np.array([0.5, -0.5, 0.5, 0, 0, 0])
+            print(f"    [错误] IK 求解失败，误差: {pre_dist:.3f}m > 0.05m")
+            print(f"    目标位置可能超出可达范围，安全回零")
+            self.home()  # 安全回零而不是使用固定轨迹
+            return GraspResult(
+                success=False,
+                object_lifted=False,
+                grasp_force=0.0,
+                final_object_pos=target_pos,
+                message=f"✗ IK 求解失败，目标位置不可达 (误差 {pre_dist:.3f}m)"
+            )
         else:
             print(f"    IK 成功，误差: {pre_dist:.3f}m")
         
@@ -395,8 +422,15 @@ class GraspSimulator:
         
         grasp_q, grasp_dist = self.ik_solver.solve(grasp_pos, pre_q)
         if grasp_dist > 0.05:
-            print(f"    [警告] IK 误差较大: {grasp_dist:.3f}m，使用备用轨迹")
-            grasp_q = np.array([0.8, -0.8, 0.6, 0, 0, 0])
+            print(f"    [错误] IK 求解失败，误差: {grasp_dist:.3f}m > 0.05m")
+            self.home()
+            return GraspResult(
+                success=False,
+                object_lifted=False,
+                grasp_force=0.0,
+                final_object_pos=target_pos,
+                message=f"✗ 抓取位置 IK 失败 (误差 {grasp_dist:.3f}m)"
+            )
         else:
             print(f"    IK 成功，误差: {grasp_dist:.3f}m")
         
@@ -417,8 +451,11 @@ class GraspSimulator:
         
         lift_q, lift_dist = self.ik_solver.solve(lift_pos, grasp_q)
         if lift_dist > 0.05:
-            print(f"    [警告] IK 误差较大: {lift_dist:.3f}m")
-            lift_q = np.array([0.5, -0.3, 0.3, 0, 0, 0])
+            print(f"    [警告] 提升位置 IK 误差较大: {lift_dist:.3f}m，尝试使用当前关节继续")
+            # 提升阶段夹爪已闭合，即使 IK 不精确也尝试提升
+            # 使用一个保守的提升动作：在当前位置基础上调整
+            lift_q = grasp_q.copy()
+            lift_q[1] -= 0.3  # 肩关节抬起一些
         else:
             print(f"    IK 成功，误差: {lift_dist:.3f}m")
         

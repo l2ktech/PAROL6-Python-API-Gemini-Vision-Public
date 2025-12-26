@@ -1,0 +1,5 @@
+{
+    "api_base": "http://192.168.1.102:8000/v1",
+    "api_key": "sk-ai-proxy-key",
+    "model": "gemini-3-pro-preview"
+}

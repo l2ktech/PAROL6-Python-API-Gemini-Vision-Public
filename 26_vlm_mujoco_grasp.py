@@ -22,9 +22,11 @@ VLM + MuJoCo 物理抓取仿真
 日期: 2025-12-23
 """
 
+import atexit
 import os
 import sys
 import json
+import tempfile
 import time
 import numpy as np
 from pathlib import Path
@@ -104,6 +106,15 @@ if not API_KEY:
     else:
         print("[警告] 未设置 API Key (环境变量或配置文件)")
         API_KEY = "test-key-placeholder"
+
+
+def _cleanup_temp_file(path: Path | None) -> None:
+    if path is None:
+        return
+    try:
+        path.unlink(missing_ok=True)
+    except OSError:
+        pass
 
 
 # ==================== 数据类 ====================
@@ -266,6 +277,7 @@ class GraspSimulator:
         self.model = None
         self.data = None
         self.viewer = None
+        self._temp_scene_path: Path | None = None
         
         # 关节索引
         self.arm_joint_ids = []
@@ -344,12 +356,20 @@ class GraspSimulator:
         block_geom.set('density', '800')  # 增加密度，更稳定
         block_geom.set('friction', '1.5 0.1 0.1')
         
-        # 保存到与原模型相同的目录（mesh 使用相对路径）
-        temp_path = base_model_path.parent / "parol6_grasp_scene.xml"
-        tree.write(str(temp_path), encoding='unicode')
-        
+        # 临时 XML 需要放在模型目录下，避免相对 mesh 路径失效；
+        # 但使用唯一文件名并在退出时清理，避免污染上游仓库。
+        with tempfile.NamedTemporaryFile(
+            dir=base_model_path.parent,
+            prefix="parol6_grasp_scene_",
+            suffix=".xml",
+            delete=False,
+        ) as temp_file:
+            self._temp_scene_path = Path(temp_file.name)
+        atexit.register(_cleanup_temp_file, self._temp_scene_path)
+        tree.write(str(self._temp_scene_path), encoding='unicode')
+
         # 加载模型
-        self.model = mujoco.MjModel.from_xml_path(str(temp_path))
+        self.model = mujoco.MjModel.from_xml_path(str(self._temp_scene_path))
         self.data = mujoco.MjData(self.model)
         print("[MuJoCo] 抓取场景创建完成（使用 parol6_fixed.xml 模型）")
     

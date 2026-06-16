@@ -1,6 +1,21 @@
 [project]
 name = "my_project"
 version = "0.1.0"
+description = "PAROL6 Python API + Gemini Vision, with VLM-driven control/sim driver scripts"
+requires-python = ">=3.9"
+
+# Runtime dependencies used by the VLM driver scripts (22_/23_/25_/26_).
+# The OpenAI client is required by all four scripts.
+dependencies = [
+    "openai",
+]
+
+[project.optional-dependencies]
+# MuJoCo simulation driver scripts (25_/26_).
+sim = [
+    "mujoco",
+    "numpy",
+]
 
 [tool.setuptools]
 packages = ["Headless"]

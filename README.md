@@ -167,6 +167,29 @@ GEMINI_API_KEY=你的_Gemini_API_密钥
 
 获取 API 密钥: https://makersuite.google.com/app/apikey
 
+#### VLM 驱动脚本配置（22_/23_/25_/26_）
+
+顶层的 `22_vlm_robot_test.py`、`23_vlm_full_test.py`、`25_vlm_mujoco_control.py`、
+`26_vlm_mujoco_grasp.py` 使用 OpenAI 兼容接口，配置优先级统一为
+**环境变量 > `vlm_config.json` > 默认值**。请勿在源码中硬编码密钥。
+
+方式一：环境变量
+```bash
+export VLM_API_KEY=你的密钥
+export VLM_API_BASE=http://localhost:8317/v1   # 可选，默认即此值
+export VLM_MODEL=gpt-5.1                        # 可选
+```
+
+方式二：配置文件（复制示例并填写，`vlm_config.json` 已被 `.gitignore` 忽略）
+```bash
+cp vlm_config.example.json vlm_config.json
+# 然后编辑 vlm_config.json 填入 api_base / api_key / model
+```
+
+> 注意：本仓库历史曾包含一个硬编码密钥，请务必在提供方处轮换该密钥。
+
+获取 OpenAI 兼容接口/密钥取决于你所使用的代理或服务商。
+
 ---
 
 ## 📖 使用方法

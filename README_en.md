@@ -82,6 +82,36 @@ The platform is designed for continuous evolution. Potential areas for expansion
 
 This project demonstrates the transformation of a hobbyist robotic platform into a research-grade system through systematic engineering and community collaboration. By addressing real needs and responding to user feedback, the system has grown beyond its original scope to become a valuable tool for the robotics community. The combination of robust engineering, practical problem-solving, and collaborative development exemplifies the approach needed for advancing robotics research.
 
+## VLM Driver Scripts Configuration
+
+The top-level driver scripts (`22_vlm_robot_test.py`, `23_vlm_full_test.py`,
+`25_vlm_mujoco_control.py`, `26_vlm_mujoco_grasp.py`) talk to an OpenAI-compatible
+endpoint. Configuration is resolved with a single precedence:
+**environment variables > `vlm_config.json` > built-in defaults**. Never hardcode a
+key in source — this is a public repository.
+
+Option A — environment variables:
+```bash
+export VLM_API_KEY=your_key
+export VLM_API_BASE=http://localhost:8317/v1   # optional (this is the default)
+export VLM_MODEL=gpt-5.1                        # optional
+```
+
+Option B — config file (copy the example; `vlm_config.json` is gitignored):
+```bash
+cp vlm_config.example.json vlm_config.json
+# then edit vlm_config.json with your api_base / api_key / model
+```
+
+Install the runtime dependencies via the packaging metadata:
+```bash
+pip install .            # installs openai (required by all driver scripts)
+pip install ".[sim]"     # adds mujoco + numpy for the simulation scripts (25_/26_)
+```
+
+> Note: this repository's history previously contained a hardcoded API key. Rotate
+> that key with your provider.
+
 ---
 
 *For technical documentation, installation instructions, and API reference, please refer to the comprehensive documentation files included in the repository.*

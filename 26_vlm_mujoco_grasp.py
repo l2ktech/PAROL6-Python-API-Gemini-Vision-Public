@@ -253,7 +253,7 @@ class VLMClient:
                 if response.startswith("json"):
                     response = response[4:]
             return json.loads(response)
-        except:
+        except (json.JSONDecodeError, ValueError, IndexError):
             return {"command": "chat", "params": {"response": response}}
 
 
@@ -542,8 +542,9 @@ class GraspSimulator:
             "front": [0, -0.6, 0.6, 0, 0, 0],      # 前方
         }
         
-        joints = location_joints.get(location, location_joints["center"])
-        
+        # 复制一份，避免就地修改 location_joints 中共享的列表
+        joints = list(location_joints.get(location, location_joints["center"]))
+
         # 1. 移动到放置位置
         print(f"  阶段1: 移动到 {location}")
         self.set_arm_joints(joints)

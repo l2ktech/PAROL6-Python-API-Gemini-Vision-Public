@@ -8,9 +8,13 @@ VLM机械臂控制测试 - OpenAI兼容API
 
 使用:
     python3 22_vlm_robot_test.py
+    python3 22_vlm_robot_test.py --model gpt5.1
 
-配置:
-    修改API_BASE和API_KEY
+配置 (优先级: 环境变量 > vlm_config.json > 默认值):
+    export VLM_API_KEY=你的密钥
+    export VLM_API_BASE=http://localhost:8317/v1   # 可选
+    export VLM_MODEL=gpt-5.1                        # 可选
+    或复制 vlm_config.example.json 为 vlm_config.json 并填写
 
 作者: wzy
 日期: 2025-12-15
@@ -33,14 +37,57 @@ except ImportError:
     sys.exit(1)
 
 # ==================== 配置 ====================
+#
+# 配置优先级: 环境变量 > vlm_config.json > 默认值
+# 切勿在源码中硬编码 API Key（本仓库为公开仓库）。
+#   - 环境变量: VLM_API_BASE / VLM_API_KEY / VLM_MODEL
+#   - 配置文件: vlm_config.json (参见 vlm_config.example.json)
 
-# ==================== 配置 ====================
 
-# API配置 - 使用cli-proxy-api
-API_BASE = "http://localhost:8317/v1"
-API_KEY = "cliproxy-ag-b9cd9ab23f51968c1afdf8fd2b7a6e26"
+def load_config() -> Dict[str, str]:
+    """加载配置：环境变量 > 配置文件 > 默认值"""
+    config = {
+        "api_base": "http://localhost:8317/v1",
+        "api_key": "",
+        "model": "gpt-5.1",
+    }
 
-# 可用模型列表 (用户自定义API)
+    # 1. 尝试读取配置文件
+    config_paths = [
+        Path("vlm_config.json"),
+        Path.home() / ".config" / "vlm" / "config.json",
+        Path(__file__).parent / "vlm_config.json",
+    ]
+    for p in config_paths:
+        if p.exists():
+            try:
+                file_config = json.loads(p.read_text())
+                config.update(file_config)
+                print(f"[配置] 已加载配置文件: {p}")
+                break
+            except Exception as e:
+                print(f"[警告] 配置文件加载失败 {p}: {e}")
+
+    # 2. 环境变量覆盖
+    if os.environ.get("VLM_API_BASE"):
+        config["api_base"] = os.environ["VLM_API_BASE"]
+    if os.environ.get("VLM_API_KEY"):
+        config["api_key"] = os.environ["VLM_API_KEY"]
+    if os.environ.get("VLM_MODEL"):
+        config["model"] = os.environ["VLM_MODEL"]
+
+    return config
+
+
+CONFIG = load_config()
+API_BASE = CONFIG["api_base"]
+API_KEY = CONFIG["api_key"]
+
+if not API_KEY:
+    print("[警告] 未设置 API Key（环境变量 VLM_API_KEY 或 vlm_config.json）")
+    API_KEY = "test-key-placeholder"
+
+# 可用模型别名 -> 实际模型 ID (用户自定义API)
 MODELS = {
     "gpt5": "gpt-5",
     "gpt5.1": "gpt-5.1",
@@ -49,7 +96,12 @@ MODELS = {
     "gpt4o-search": "gpt-4o-search-preview",
 }
 
+# 默认模型别名：优先使用配置中的 model（按其 ID 反查别名），否则回退到 gpt5.1
 DEFAULT_MODEL = "gpt5.1"
+for _alias, _model_id in MODELS.items():
+    if _model_id == CONFIG.get("model"):
+        DEFAULT_MODEL = _alias
+        break
 
 
 # ==================== VLM客户端 ====================
@@ -259,14 +311,16 @@ class VLMRobotController:
 
 # ==================== 主程序 ====================
 
-def test_vlm_api():
+def test_vlm_api(model: str = None):
     """测试VLM API连接"""
     print("="*60)
     print("VLM API连接测试")
     print("="*60)
-    
+
     vlm = VLMClient()
-    
+    if model:
+        vlm.set_model(model)
+
     print("\n1. 测试基本连接...")
     if vlm.test_connection():
         print("   ✓ API连接成功")
@@ -284,17 +338,19 @@ def test_vlm_api():
     return True
 
 
-def interactive_mode():
+def interactive_mode(model: str = None):
     """交互模式"""
     print("="*60)
     print("VLM机械臂控制 - 交互模式")
     print("="*60)
     print("输入 'quit' 退出")
     print("输入 'model <名称>' 切换模型")
-    print("  可用: flash, thinking, vision, search, code")
+    print("  可用: " + ", ".join(MODELS.keys()))
     print()
-    
+
     vlm = VLMClient()
+    if model:
+        vlm.set_model(model)
     controller = VLMRobotController(vlm)
     
     while True:
@@ -327,13 +383,17 @@ def interactive_mode():
 def main():
     parser = argparse.ArgumentParser(description="VLM机械臂控制测试")
     parser.add_argument("--test", action="store_true", help="仅测试API连接")
-    parser.add_argument("--model", default="flash", help="选择模型")
+    parser.add_argument(
+        "--model",
+        default=DEFAULT_MODEL,
+        help="选择模型 (可用: " + ", ".join(MODELS.keys()) + ")",
+    )
     args = parser.parse_args()
-    
+
     if args.test:
-        test_vlm_api()
+        test_vlm_api(args.model)
     else:
-        interactive_mode()
+        interactive_mode(args.model)
 
 
 if __name__ == "__main__":

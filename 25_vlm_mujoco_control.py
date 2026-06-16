@@ -48,19 +48,56 @@ except ImportError:
     sys.exit(1)
 
 # ==================== VLM 配置 ====================
+#
+# 配置优先级: 环境变量 > vlm_config.json > 默认值
+# 切勿在源码中硬编码 API Key（本仓库为公开仓库）。
 
-# 优先从环境变量读取，否则使用默认值
-API_BASE = os.environ.get("VLM_API_BASE", "http://localhost:8317/v1")
-API_KEY = os.environ.get("VLM_API_KEY", "")  # 必须通过环境变量设置
-MODEL = os.environ.get("VLM_MODEL", "gpt-4o")
+
+def load_config() -> Dict[str, str]:
+    """加载配置：环境变量 > 配置文件 > 默认值"""
+    config = {
+        "api_base": "http://localhost:8317/v1",
+        "api_key": "",
+        "model": "gpt-4o",
+    }
+
+    config_paths = [
+        Path("vlm_config.json"),
+        Path.home() / ".config" / "vlm" / "config.json",
+        Path(__file__).parent / "vlm_config.json",
+    ]
+    for p in config_paths:
+        if p.exists():
+            try:
+                config.update(json.loads(p.read_text()))
+                print(f"[配置] 已加载配置文件: {p}")
+                break
+            except Exception as e:
+                print(f"[警告] 配置文件加载失败 {p}: {e}")
+
+    if os.environ.get("VLM_API_BASE"):
+        config["api_base"] = os.environ["VLM_API_BASE"]
+    if os.environ.get("VLM_API_KEY"):
+        config["api_key"] = os.environ["VLM_API_KEY"]
+    if os.environ.get("VLM_MODEL"):
+        config["model"] = os.environ["VLM_MODEL"]
+
+    return config
+
+
+_CONFIG = load_config()
+API_BASE = _CONFIG["api_base"]
+API_KEY = _CONFIG["api_key"]
+MODEL = _CONFIG["model"]
 
 # 检查 API 密钥
 if not API_KEY:
-    config_file = Path.home() / ".config" / "vlm" / "api_key"
-    if config_file.exists():
-        API_KEY = config_file.read_text().strip()
+    # 兼容旧的密钥文件
+    old_key_file = Path.home() / ".config" / "vlm" / "api_key"
+    if old_key_file.exists():
+        API_KEY = old_key_file.read_text().strip()
     else:
-        print("[警告] 未设置 VLM_API_KEY 环境变量")
+        print("[警告] 未设置 API Key（环境变量 VLM_API_KEY 或 vlm_config.json）")
         API_KEY = "test-key-placeholder"
 
 # ==================== VLM 客户端 ====================
@@ -120,7 +157,7 @@ class VLMClient:
                 if response.startswith("json"):
                     response = response[4:]
             return json.loads(response)
-        except:
+        except (json.JSONDecodeError, ValueError, IndexError):
             return {"command": "chat", "params": {"response": response}}
 
 

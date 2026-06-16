@@ -23,8 +23,9 @@ import time
 import json
 from pathlib import Path
 
-# 添加路径
-sys.path.insert(0, '/l2k/home/wzy/21-L2Karm/12-unified-control/src')
+# 添加路径（相对于本仓库的上层项目目录，避免硬编码绝对路径）
+PROJECT_ROOT = Path(__file__).parent.parent
+sys.path.insert(0, str(PROJECT_ROOT / "12-unified-control" / "src"))
 
 # 尝试导入
 try:
@@ -43,10 +44,51 @@ except ImportError:
 
 
 # ==================== 配置 ====================
+#
+# 配置优先级: 环境变量 > vlm_config.json > 默认值
+# 切勿在源码中硬编码 API Key（本仓库为公开仓库）。
 
-API_BASE = "http://localhost:8317/v1"
-API_KEY = "cliproxy-ag-b9cd9ab23f51968c1afdf8fd2b7a6e26"
-MODEL = "gpt-5.1"
+
+def load_config() -> dict:
+    """加载配置：环境变量 > 配置文件 > 默认值"""
+    config = {
+        "api_base": "http://localhost:8317/v1",
+        "api_key": "",
+        "model": "gpt-5.1",
+    }
+
+    config_paths = [
+        Path("vlm_config.json"),
+        Path.home() / ".config" / "vlm" / "config.json",
+        Path(__file__).parent / "vlm_config.json",
+    ]
+    for p in config_paths:
+        if p.exists():
+            try:
+                config.update(json.loads(p.read_text()))
+                print(f"[配置] 已加载配置文件: {p}")
+                break
+            except Exception as e:
+                print(f"[警告] 配置文件加载失败 {p}: {e}")
+
+    if os.environ.get("VLM_API_BASE"):
+        config["api_base"] = os.environ["VLM_API_BASE"]
+    if os.environ.get("VLM_API_KEY"):
+        config["api_key"] = os.environ["VLM_API_KEY"]
+    if os.environ.get("VLM_MODEL"):
+        config["model"] = os.environ["VLM_MODEL"]
+
+    return config
+
+
+_CONFIG = load_config()
+API_BASE = _CONFIG["api_base"]
+API_KEY = _CONFIG["api_key"]
+MODEL = _CONFIG["model"]
+
+if not API_KEY:
+    print("[警告] 未设置 API Key（环境变量 VLM_API_KEY 或 vlm_config.json）")
+    API_KEY = "test-key-placeholder"
 
 # 测试位置
 STANDBY_POS = [0, -90, 180, 0, 0, 90]
@@ -184,8 +226,8 @@ class VLMRobotTest:
             try:
                 self.robot.disconnect()
                 print("✓ 机器人断开")
-            except:
-                pass
+            except Exception as e:
+                print(f"⚠️ 机器人断开异常: {e}")
     
     def record(self, name, success, detail=""):
         """记录结果"""

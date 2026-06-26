@@ -44,9 +44,17 @@ except ImportError:
 
 # ==================== 配置 ====================
 
-API_BASE = "http://localhost:8317/v1"
-API_KEY = "cliproxy-ag-b9cd9ab23f51968c1afdf8fd2b7a6e26"
-MODEL = "gpt-5.1"
+# API 配置 - 从环境变量读取，禁止把真实密钥写进源码（见 .env.example）
+API_BASE = os.environ.get("VLM_API_BASE", "http://localhost:8317/v1")
+API_KEY = os.environ.get("VLM_API_KEY", "")
+MODEL = os.environ.get("VLM_MODEL", "gpt-5.1")
+# 网络超时与重试
+API_TIMEOUT = float(os.environ.get("VLM_API_TIMEOUT", "30"))
+API_MAX_RETRIES = int(os.environ.get("VLM_API_MAX_RETRIES", "2"))
+
+if not API_KEY:
+    print("[警告] 未设置 VLM_API_KEY 环境变量，将使用占位符；真实调用会失败。")
+    API_KEY = "test-key-placeholder"
 
 # 测试位置
 STANDBY_POS = [0, -90, 180, 0, 0, 90]
@@ -143,7 +151,12 @@ class VLMRobotTest:
         # VLM客户端
         if OPENAI_OK:
             try:
-                self.vlm_client = OpenAI(base_url=API_BASE, api_key=API_KEY)
+                self.vlm_client = OpenAI(
+                    base_url=API_BASE,
+                    api_key=API_KEY,
+                    timeout=API_TIMEOUT,
+                    max_retries=API_MAX_RETRIES,
+                )
                 print("✓ VLM客户端初始化")
             except Exception as e:
                 print(f"✗ VLM初始化失败: {e}")

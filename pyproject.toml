@@ -1,6 +1,30 @@
 [project]
 name = "my_project"
 version = "0.1.0"
+description = "06-VLM-Gemini-Vision: VLM + MuJoCo + PAROL6 抓取实验（headless 原型）"
+requires-python = ">=3.10"
+
+# 运行所需依赖与版本下限固定。
+# 版本下限依据：本机实测可用版本（mujoco 3.4.0 / numpy 1.26.4 / openai 2.11.0 / opencv 4.10.0），
+# 取「能跑通当前代码」的保守下限，上限不锁死以便安全升级补丁版本。
+# 说明：
+#  - mujoco：物理抓取仿真（26_vlm_mujoco_grasp.py / test_grasp_headless*.py）。
+#  - openai：VLM/OpenAI 兼容代理客户端，>=1.0 才支持 client 级 timeout/max_retries。
+#  - numpy：IK / 位姿计算。
+#  - opencv-python：图像处理（部分脚本使用）。
+dependencies = [
+    "numpy>=1.23,<3",
+    "mujoco>=3.1,<4",
+    "openai>=1.10,<3",
+    "opencv-python>=4.8,<5",
+]
+
+[project.optional-dependencies]
+# 仅跑无头物理抓取 smoke（不调用 VLM）时的最小子集。
+sim = [
+    "numpy>=1.23,<3",
+    "mujoco>=3.1,<4",
+]
 
 [tool.setuptools]
 packages = ["Headless"]

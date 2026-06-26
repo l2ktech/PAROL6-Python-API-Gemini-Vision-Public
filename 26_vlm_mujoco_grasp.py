@@ -22,9 +22,11 @@ VLM + MuJoCo 物理抓取仿真
 日期: 2025-12-23
 """
 
+import atexit
 import os
 import sys
 import json
+import tempfile
 import time
 import numpy as np
 from pathlib import Path
@@ -73,20 +75,26 @@ def load_config() -> Dict[str, str]:
             try:
                 import json
                 file_config = json.loads(p.read_text())
-                config.update(file_config)
+                # 仅采用非空且非下划线注释字段，避免占位的空字符串覆盖默认值
+                for key, value in file_config.items():
+                    if key.startswith("_"):
+                        continue
+                    if isinstance(value, str) and value.strip() == "":
+                        continue
+                    config[key] = value
                 print(f"[配置] 已加载配置文件: {p}")
                 break
             except Exception as e:
                 print(f"[警告] 配置文件加载失败 {p}: {e}")
 
-    # 2. 环境变量覆盖
+    # 2. 环境变量覆盖（优先级最高，密钥/IP 应只来自这里）
     if os.environ.get("VLM_API_BASE"):
         config["api_base"] = os.environ["VLM_API_BASE"]
     if os.environ.get("VLM_API_KEY"):
         config["api_key"] = os.environ["VLM_API_KEY"]
     if os.environ.get("VLM_MODEL"):
         config["model"] = os.environ["VLM_MODEL"]
-        
+
     return config
 
 # 加载配置
@@ -104,6 +112,15 @@ if not API_KEY:
     else:
         print("[警告] 未设置 API Key (环境变量或配置文件)")
         API_KEY = "test-key-placeholder"
+
+
+def _cleanup_temp_file(path: Path | None) -> None:
+    if path is None:
+        return
+    try:
+        path.unlink(missing_ok=True)
+    except OSError:
+        pass
 
 
 # ==================== 数据类 ====================
@@ -196,7 +213,15 @@ class VLMClient:
     """VLM API 客户端"""
     
     def __init__(self):
-        self.client = OpenAI(base_url=API_BASE, api_key=API_KEY)
+        # 网络超时与重试，避免代理/服务不可达时长时间卡死
+        timeout = float(os.environ.get("VLM_API_TIMEOUT", "30"))
+        max_retries = int(os.environ.get("VLM_API_MAX_RETRIES", "2"))
+        self.client = OpenAI(
+            base_url=API_BASE,
+            api_key=API_KEY,
+            timeout=timeout,
+            max_retries=max_retries,
+        )
         self.model = MODEL
         print(f"[VLM] 初始化: {API_BASE}, 模型: {self.model}")
     
@@ -266,6 +291,7 @@ class GraspSimulator:
         self.model = None
         self.data = None
         self.viewer = None
+        self._temp_scene_path: Path | None = None
         
         # 关节索引
         self.arm_joint_ids = []
@@ -344,12 +370,20 @@ class GraspSimulator:
         block_geom.set('density', '800')  # 增加密度，更稳定
         block_geom.set('friction', '1.5 0.1 0.1')
         
-        # 保存到与原模型相同的目录（mesh 使用相对路径）
-        temp_path = base_model_path.parent / "parol6_grasp_scene.xml"
-        tree.write(str(temp_path), encoding='unicode')
-        
+        # 临时 XML 需要放在模型目录下，避免相对 mesh 路径失效；
+        # 但使用唯一文件名并在退出时清理，避免污染上游仓库。
+        with tempfile.NamedTemporaryFile(
+            dir=base_model_path.parent,
+            prefix="parol6_grasp_scene_",
+            suffix=".xml",
+            delete=False,
+        ) as temp_file:
+            self._temp_scene_path = Path(temp_file.name)
+        atexit.register(_cleanup_temp_file, self._temp_scene_path)
+        tree.write(str(self._temp_scene_path), encoding='unicode')
+
         # 加载模型
-        self.model = mujoco.MjModel.from_xml_path(str(temp_path))
+        self.model = mujoco.MjModel.from_xml_path(str(self._temp_scene_path))
         self.data = mujoco.MjData(self.model)
         print("[MuJoCo] 抓取场景创建完成（使用 parol6_fixed.xml 模型）")
     

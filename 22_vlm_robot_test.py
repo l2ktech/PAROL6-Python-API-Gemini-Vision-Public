@@ -34,11 +34,17 @@ except ImportError:
 
 # ==================== 配置 ====================
 
-# ==================== 配置 ====================
+# API 配置 - 从环境变量读取，禁止把真实密钥写进源码
+# 设置方式：export VLM_API_BASE=... / export VLM_API_KEY=...（见 .env.example）
+API_BASE = os.environ.get("VLM_API_BASE", "http://localhost:8317/v1")
+API_KEY = os.environ.get("VLM_API_KEY", "")
+# 网络超时与重试（秒 / 次），可用环境变量覆盖
+API_TIMEOUT = float(os.environ.get("VLM_API_TIMEOUT", "30"))
+API_MAX_RETRIES = int(os.environ.get("VLM_API_MAX_RETRIES", "2"))
 
-# API配置 - 使用cli-proxy-api
-API_BASE = "http://localhost:8317/v1"
-API_KEY = "cliproxy-ag-b9cd9ab23f51968c1afdf8fd2b7a6e26"
+if not API_KEY:
+    print("[警告] 未设置 VLM_API_KEY 环境变量，将使用占位符；真实调用会失败。")
+    API_KEY = "test-key-placeholder"
 
 # 可用模型列表 (用户自定义API)
 MODELS = {
@@ -60,7 +66,9 @@ class VLMClient:
     def __init__(self, api_base: str = API_BASE, api_key: str = API_KEY):
         self.client = OpenAI(
             base_url=api_base,
-            api_key=api_key
+            api_key=api_key,
+            timeout=API_TIMEOUT,
+            max_retries=API_MAX_RETRIES,
         )
         self.model = MODELS[DEFAULT_MODEL]
         print(f"[VLM] 初始化客户端")

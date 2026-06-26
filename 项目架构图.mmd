@@ -1,0 +1,16 @@
+flowchart TD
+    A["06-VLM-Gemini-Vision"]
+    B["入口 / 使用起点\ntest_grasp_standalone.py / 23_vlm_full_test.py"]
+    C["核心模块 / 目录"]
+    D["配置 / 依赖 / 资源"]
+    E["输出 / 目标\nVLM 推理结果、MuJoCo 抓取控制"]
+    A --> B
+    B --> C
+    B --> D
+    C --> E
+    D --> C
+    C --> C1["pyproject.toml"]
+    C --> C2["Headless"]
+    C --> C3["test_*.py"]
+    D --> D1["README.md"]
+    D --> D2["pyproject.toml"]

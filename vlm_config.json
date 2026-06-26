@@ -1,5 +1,6 @@
 {
-    "api_base": "http://192.168.1.102:8000/v1",
-    "api_key": "sk-ai-proxy-key",
+    "_comment": "请勿在此文件写入真实密钥/内网 IP。优先用环境变量 VLM_API_BASE / VLM_API_KEY / VLM_MODEL；本文件仅作占位与本地覆盖示例。详见 .env.example 与 06待轮换清单.md。",
+    "api_base": "",
+    "api_key": "",
     "model": "gemini-3-pro-preview"
 }

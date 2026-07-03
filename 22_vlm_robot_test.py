@@ -48,6 +48,9 @@ if not API_KEY:
 
 # 可用模型列表 (用户自定义API)
 MODELS = {
+    "gpt5.5": "gpt-5.5",
+    "gpt5.4": "gpt-5.4",
+    "gpt5.4-mini": "gpt-5.4-mini",
     "gpt5": "gpt-5",
     "gpt5.1": "gpt-5.1",
     "gpt5.2": "gpt-5.2",
@@ -55,7 +58,13 @@ MODELS = {
     "gpt4o-search": "gpt-4o-search-preview",
 }
 
-DEFAULT_MODEL = "gpt5.1"
+DEFAULT_MODEL = os.environ.get("VLM_MODEL", "gpt5.1")
+
+
+def resolve_model(model_name: str) -> str:
+    """Resolve a short model alias while allowing raw model IDs."""
+
+    return MODELS.get(model_name, model_name)
 
 
 # ==================== VLM客户端 ====================
@@ -70,17 +79,14 @@ class VLMClient:
             timeout=API_TIMEOUT,
             max_retries=API_MAX_RETRIES,
         )
-        self.model = MODELS[DEFAULT_MODEL]
+        self.model = resolve_model(DEFAULT_MODEL)
         print(f"[VLM] 初始化客户端")
         print(f"  API: {api_base}")
         print(f"  模型: {self.model}")
     
     def set_model(self, model_name: str):
         """设置模型"""
-        if model_name in MODELS:
-            self.model = MODELS[model_name]
-        else:
-            self.model = model_name
+        self.model = resolve_model(model_name)
         print(f"[VLM] 切换模型: {self.model}")
     
     def chat(self, message: str, image_path: str = None) -> str:
@@ -156,7 +162,7 @@ class VLMClient:
         try:
             response = self.chat("Say 'Hello' in Chinese")
             print(f"[VLM] 测试响应: {response[:100]}...")
-            return True
+            return bool(response) and not response.startswith("[错误]")
         except Exception as e:
             print(f"[VLM] 连接测试失败: {e}")
             return False
@@ -267,13 +273,15 @@ class VLMRobotController:
 
 # ==================== 主程序 ====================
 
-def test_vlm_api():
+def test_vlm_api(model_name: str | None = None):
     """测试VLM API连接"""
     print("="*60)
     print("VLM API连接测试")
     print("="*60)
     
     vlm = VLMClient()
+    if model_name:
+        vlm.set_model(model_name)
     
     print("\n1. 测试基本连接...")
     if vlm.test_connection():
@@ -281,7 +289,7 @@ def test_vlm_api():
     else:
         print("   ✗ API连接失败")
         print("\n请确保API服务已启动:")
-        print(f"  端口: 35621")
+        print(f"  API: {API_BASE}")
         return False
     
     print("\n2. 测试文本对话...")
@@ -335,11 +343,11 @@ def interactive_mode():
 def main():
     parser = argparse.ArgumentParser(description="VLM机械臂控制测试")
     parser.add_argument("--test", action="store_true", help="仅测试API连接")
-    parser.add_argument("--model", default="flash", help="选择模型")
+    parser.add_argument("--model", default=None, help="选择模型或模型别名")
     args = parser.parse_args()
     
     if args.test:
-        test_vlm_api()
+        test_vlm_api(args.model)
     else:
         interactive_mode()
 

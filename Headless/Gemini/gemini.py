@@ -1619,18 +1619,22 @@ if __name__ == "__main__":
     warnings.filterwarnings("ignore", message=".*non-data parts.*")
     warnings.filterwarnings("ignore", message=".*non text parts.*")
     
-    # Calibrate gripper on startup (optional)
-    try:
-        from Headless.robot_api import control_electric_gripper
-        control_electric_gripper("calibrate")
-        print(" Gripper calibrated")
+    # Keep imports/help safe by default. Startup robot actions must be enabled
+    # explicitly when a supervised headless controller is already running.
+    if os.environ.get("GEMINI_STARTUP_ROBOT_ACTIONS") == "1":
+        try:
+            from Headless.robot_api import control_electric_gripper
+            control_electric_gripper("calibrate")
+            print(" Gripper calibrated")
 
-        from supplementary_functions import move_to_standard_position
-        move_to_standard_position()
-        print(" Moved to home position")
+            from supplementary_functions import move_to_standard_position
+            move_to_standard_position()
+            print(" Moved to standard position")
 
-    except Exception as e:
-        print(f"[WARNING] Gripper calibration skipped: {e}")
+        except Exception as e:
+            print(f"[WARNING] Startup robot actions skipped: {e}")
+    else:
+        print("[SAFE] Startup robot actions disabled; set GEMINI_STARTUP_ROBOT_ACTIONS=1 to enable.")
     
     # Run with proper exit code handling
     try:

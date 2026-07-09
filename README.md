@@ -6,6 +6,13 @@ This repository is the public evidence entry for the PAROL6 + Gemini Vision cont
 
 For interviews, read it as an integration and adaptation project: upstream PAROL6 robot assets and API concepts are used as the base, while this repository focuses on the public VLM control workflow, test scripts, documentation, safety notes, and reproducible evidence around vision-guided operation.
 
+## Portfolio / Interview Context
+
+- Portfolio overview: https://notion.l2k.tech:28443/article/interview-portfolio
+- P02 project page: https://notion.l2k.tech:28443/api/report-media/server-upload/notionnext-videos/interview-portfolio/20260708/project-homepages/p02-parol6/index.html
+
+This repository is one public support entry for the P02 PAROL6 control-stack project. It is suitable for discussing the public VLM/API workflow, while private robot connection details, calibration logs, safety gates, credentials, and unredacted real-world media remain outside this public repository.
+
 ## Demo / Evidence Entry Points
 
 - [`01_PAROL6完整功能测试教程.ipynb`](01_PAROL6完整功能测试教程.ipynb): notebook-style end-to-end test walkthrough.
@@ -754,7 +761,7 @@ python calibration_refinement.py
 
 编辑 `Headless/robot_api.py`:
 ```python
-SERVER_IP = "192.168.1.100"  # 改为服务器 IP
+SERVER_IP = "192.0.2.10"     # 示例地址；改为你的机器人控制器 IP
 SERVER_PORT = 5001           # 默认端口
 ```
 

@@ -1,5 +1,24 @@
 # PAROL6 智能机械臂控制系统 - 中文使用说明
 
+## Public Portfolio Summary
+
+This repository is the public evidence entry for the PAROL6 + Gemini Vision control demo. It shows how a natural-language and vision-guided robot workflow can be assembled around the Headless PAROL6 Python API, Gemini Vision, RealSense RGB-D input, MuJoCo-side grasp tests, and hardware-facing validation notes.
+
+For interviews, read it as an integration and adaptation project: upstream PAROL6 robot assets and API concepts are used as the base, while this repository focuses on the public VLM control workflow, test scripts, documentation, safety notes, and reproducible evidence around vision-guided operation.
+
+## Demo / Evidence Entry Points
+
+- [`01_PAROL6完整功能测试教程.ipynb`](01_PAROL6完整功能测试教程.ipynb): notebook-style end-to-end test walkthrough.
+- [`22_vlm_robot_test.py`](22_vlm_robot_test.py) and [`23_vlm_full_test.py`](23_vlm_full_test.py): VLM-to-robot control test entry points.
+- [`25_vlm_mujoco_control.py`](25_vlm_mujoco_control.py) and [`26_vlm_mujoco_grasp.py`](26_vlm_mujoco_grasp.py): MuJoCo-side control and grasp validation examples.
+- [`运行核验报告.md`](运行核验报告.md): current public verification report.
+- [`项目架构图.mmd`](项目架构图.mmd): Mermaid architecture source for the control pipeline.
+- [`README_en.md`](README_en.md) and [`API-Specific-README.md`](API-Specific-README.md): English overview and API-focused reference.
+
+## Public Boundary
+
+This public repository intentionally excludes API keys, `.env` values, private robot network addresses, serial/CAN identifiers, private calibration logs, hardware safety gate settings, and unredacted real-world image/video data. Use the checked-in examples and reports as public-facing evidence, not as a complete private lab deployment snapshot.
+
 ## 📋 项目概述
 
 这是一个基于 Gemini Vision AI 的 PAROL6 机械臂智能控制系统，能够通过自然语言和视觉识别实现机器人的自动化操作。该系统将传统的 GUI 控制方式转变为可编程的研究级平台，支持视觉引导操作和自然语言控制。

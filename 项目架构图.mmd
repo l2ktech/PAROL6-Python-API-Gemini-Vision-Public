@@ -1,4 +1,28 @@
-flowchart TD
+---
+config:
+  theme: base
+  look: classic
+  flowchart:
+    curve: linear
+    htmlLabels: true
+    nodeSpacing: 34
+    rankSpacing: 42
+  themeVariables:
+    background: "#ffffff"
+    fontFamily: "Noto Sans CJK SC, Noto Sans SC, PingFang SC, Microsoft YaHei, Arial, sans-serif"
+    fontSize: "16px"
+    primaryColor: "#ffffff"
+    primaryTextColor: "#111111"
+    primaryBorderColor: "#555555"
+    secondaryColor: "#edf4fb"
+    tertiaryColor: "#fff7e8"
+    lineColor: "#5f6368"
+    edgeLabelBackground: "#ffffff"
+    clusterBkg: "#ffffff"
+    clusterBorder: "#777777"
+  themeCSS: ".node rect { rx: 8px; ry: 8px; } .cluster rect { rx: 8px; ry: 8px; stroke-dasharray: 7 6; }"
+---
+flowchart TB
     A["06-VLM-Gemini-Vision"]
     B["入口 / 使用起点\ntest_grasp_standalone.py / 23_vlm_full_test.py"]
     C["核心模块 / 目录"]
